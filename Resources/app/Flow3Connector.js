@@ -32,7 +32,7 @@ Ext.define('F3Dev.Flow3Connector', {
 		activateClassFileMonitoring: function() {
 			var fileMonitor = Titanium.Process.createProcess({
 				//args: ['osascript', '-e', 'do shell script "/Applications/fseventer/fseventer.app/Contents/Resources/fetool" with administrator privileges']
-				args: ['sudo', '/Applications/fseventer/fseventer.app/Contents/Resources/fetool']
+				args: F3Dev.Preferences.get('Programs.FileSystemEvents')
 			});
 
 			var timeout;

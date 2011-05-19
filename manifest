@@ -1,11 +1,11 @@
-#appname: FLOW3Dev
-#publisher: sebastian
-#url: http://sandstorm-media.de
-#image: default_app_logo.png
-#appid: de.sandstormmedia.flow3dev
-#desc: undefined
-#type: desktop
-#guid: 765f52f7-b053-4a9a-95ac-7d1eab83e5d1
+#appname:FLOW3Dev
+#appid:de.sandstormmedia.flow3dev
+#publisher:sebastian
+#image:default_app_logo.png
+#url:http://sandstorm-media.de
+#guid:765f52f7-b053-4a9a-95ac-7d1eab83e5d1
+#desc:not specified
+#type:desktop
 runtime:1.2.0.RC1
 tiapp:1.2.0.RC1
 tifilesystem:1.2.0.RC1
