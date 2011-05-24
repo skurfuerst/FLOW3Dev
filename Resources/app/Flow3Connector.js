@@ -29,6 +29,21 @@ Ext.define('F3Dev.Flow3Connector', {
 			});
 			proc.launch();
 		},
+		
+		clearSettingsFileCache: function() {
+			if (!F3Dev.Preferences.currentInstanceBasePath) return;
+			
+			var file = Titanium.Filesystem.getFile(F3Dev.Preferences.currentInstanceBasePath + 'Data/Temporary/Production/Configuration/ProductionConfigurations.php');
+			if (file.exists()) {
+				var returnValue = file.deleteFile();
+				if (returnValue) {
+					this._showNotification('Removed configuration');
+				} else {
+					this._showNotification('!!! Could not remove configuration, Permission issue?');
+				}
+			}
+		},
+		
 		activateClassFileMonitoring: function() {
 			var fileMonitor = Titanium.Process.createProcess({
 				//args: ['osascript', '-e', 'do shell script "/Applications/fseventer/fseventer.app/Contents/Resources/fetool" with administrator privileges']
@@ -36,8 +51,12 @@ Ext.define('F3Dev.Flow3Connector', {
 			});
 
 			var timeout;
+			var customMonitorExpression = F3Dev.Preferences.get('customClassMonitoringExpression');
 			fileMonitor.setOnReadLine(function(changedFileName) {
-				if (changedFileName.match(/Packages.*Classes.*\.php/)) {
+				if (changedFileName.match(/Configuration.*yaml$/)) {
+					F3Dev.Flow3Connector.clearSettingsFileCache();
+				}
+				if (changedFileName.match(/Packages.*Classes.*\.php$/) || (customMonitorExpression && changedFileName.match(customMonitorExpression))) {
 					if (timeout) window.clearTimeout(timeout);
 					timeout = window.setTimeout(function() {
 						F3Dev.Flow3Connector.runCompileStep();

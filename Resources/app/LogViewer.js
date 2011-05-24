@@ -7,10 +7,14 @@ Ext.define('F3Dev.LogViewer', {
 	initComponent: function(){
 		Ext.apply(this, {
 			padding: 5,
-			autoScroll: true
+			autoScroll: true,
+			listeners: {
+				afterrender:Ext.Function.bind(this._setupFileMonitoring, this)
+			}
 		});
 		this.callParent(arguments);
-		
+	},
+	_setupFileMonitoring: function() {
 		var scope = this;
 		var timeOfLastChange = 0;
 		this._monitorFile(F3Dev.Preferences.currentInstanceBasePath + 'Data/Logs/' + this.logFile, function(logMessage) {
@@ -31,6 +35,9 @@ Ext.define('F3Dev.LogViewer', {
 				cls += 'notice';
 			} else if (logMessage.match('ERROR')) {
 				cls += 'error';
+			} else if (logMessage.match('CRITICAL')) {
+				cls += 'critical';
+				F3Dev.Flow3Connector._showNotification('!!! Critical message in log');
 			}
 			scope.getTargetEl().insertFirst({
 				cls: cls,
@@ -44,17 +51,37 @@ Ext.define('F3Dev.LogViewer', {
 	},
 	_monitorFile: function(filePath, callback) {
 		var file = Titanium.Filesystem.getFile(filePath);
+		var scope = this;
+		if (!file.exists()) {
+			var checkFileExistenceTimer;
+			checkFileExistenceTimer = window.setInterval(function() {
+				if (file.exists()) {
+						// now, the file exists, so we start watching it, and
+						// terminate our checker.
+					window.clearTimeout(checkFileExistenceTimer);
+					scope._monitorFile(filePath, callback);
+				}
+			}, 2000);
+			
+			return;
+		}
 		var oldSize = file.size() - 1024; // On first run of the interval function, the last 1024 bytes of the file will be displayed.
+		if (oldSize < 0) oldSize = 0;
 		window.setInterval(function() {
 			var currentSize = file.size();
 			if (oldSize !== currentSize) {
 				var stream = file.open();
 				stream.seek(oldSize);
+				oldSize = currentSize;
 				while(line = stream.readLine()) {
-					callback(line.toString());
+					try {
+						callback(line.toString());
+					} catch(e) {
+						console.error("EXCEPTION");
+						console.error(e);
+					}
 				}
 				stream.close();
-				oldSize = file.size();
 			}
 		}, 100);
 	}
